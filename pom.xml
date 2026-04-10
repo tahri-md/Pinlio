@@ -13,8 +13,8 @@
 
     <modules>
         <module>services/user-service</module>
+        <module>services/pin-service</module>
         <!-- Add other services here as we build them -->
-        <!-- <module>services/pin-service</module> -->
         <!-- <module>services/board-service</module> -->
         <!-- <module>services/interaction-service</module> -->
     </modules>

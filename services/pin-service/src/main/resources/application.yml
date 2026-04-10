@@ -1,0 +1,32 @@
+server:
+  port: ${PIN_SERVICE_PORT:8002}
+
+spring:
+  application:
+    name: pin-service
+
+  datasource:
+    url: ${PIN_DB_URL:jdbc:postgresql://localhost:5434/pinlio_pin}
+    username: ${PIN_DB_USERNAME:postgres}
+    password: ${PIN_DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+app:
+  s3:
+    bucket: ${AWS_S3_BUCKET:pinlio-dev-images}
+    region: ${AWS_REGION:eu-north-1}
+    presign-expiry-seconds: ${AWS_S3_PRESIGN_EXPIRY_SECONDS:900}
