@@ -7,7 +7,7 @@ COPY pom.xml .
 COPY services/user-service ./services/user-service
 
 # Build
-RUN mvn clean package -DskipTests -pl services/user-service
+RUN mvn clean package -DskipTests -f services/user-service/pom.xml
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine

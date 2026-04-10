@@ -13,8 +13,32 @@ services:
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  pin-service:
+    build:
+      context: .
+      dockerfile: services/pin-service/Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      - PIN_SERVICE_PORT=8002
+      - PIN_DB_URL=jdbc:postgresql://pin-db:5432/pinlio_pin
+      - PIN_DB_USERNAME=postgres
+      - PIN_DB_PASSWORD=postgres
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:?Set AWS_ACCESS_KEY_ID in environment}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:?Set AWS_SECRET_ACCESS_KEY in environment}
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN:-}
+      - AWS_REGION=eu-north-1
+      - AWS_S3_BUCKET=pinlio-dev-images
+      - AWS_S3_PRESIGN_EXPIRY_SECONDS=900
+    depends_on:
+      pin-db:
+        condition: service_healthy
+
   db:
     image: postgres:13
     environment:
@@ -23,12 +47,35 @@ services:
       - POSTGRES_PASSWORD=postgres
     ports:
       - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pinlio"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  pin-db:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=pinlio_pin
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - pin-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pinlio_pin"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
   redis:
     image: redis:6
     ports:
       - "6380:6379"
     volumes:
-      - redis-data:/data 
+      - redis-data:/data
+
 volumes:
   redis-data:
-  
+  pin-postgres-data:
